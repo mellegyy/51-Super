@@ -24,7 +24,7 @@ public class UserRepository extends MainRepository<User> {
 
     @Override
     protected String getDataPath() {
-        return "src/main/data/users.json";
+        return "data/users.json";  // No absolute path, just the relative classpath location
     }
 
     @Override
@@ -60,17 +60,26 @@ public class UserRepository extends MainRepository<User> {
             if (users.contains(user)) {
                 throw new RuntimeException("User Already Added");
             }
-            users.add(user);
-            writeUsersToFile(users);
-            return user;
+
+            if (users.stream().anyMatch(u -> u.getName().trim().equalsIgnoreCase(user.getName().trim()))) {
+                throw new RuntimeException("Warning: Duplicate user");
+            }
+            else {
+                users.add(user);
+                writeUsersToFile(users);
+                return user;
+            }
         } catch (IOException e) {
             throw new RuntimeException("Failed to save user", e);
         }
     }
 
+
+
     private void writeUsersToFile(List<User> users) throws IOException {
         File file = new FileSystemResource("src/main/resources/" + getDataPath()).getFile(); // Use a writable path
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, users);
+        System.out.println("File Saved");
     }
 
     public List<Order> getOrdersByUserId(UUID userId) {
@@ -119,12 +128,12 @@ public class UserRepository extends MainRepository<User> {
     public void deleteUserById(UUID userId) {
         try {
             ArrayList<User> users = getUsers();
-            User user = getUserById(userId);
-            users.remove(user);
+            users.removeIf(user -> user.getId().equals(userId));
             writeUsersToFile(users);
             System.out.println("User Deleted");
         } catch (IOException e) {
-            throw new RuntimeException("User Not Found", e);
+            throw new RuntimeException("Error updating file after deletion", e);
         }
     }
+
 }
