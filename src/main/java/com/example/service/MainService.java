@@ -1,15 +1,15 @@
 package com.example.service;
 
-
-import org.springframework.context.annotation.Primary;
+import com.example.repository.MainRepository;
 import org.springframework.stereotype.Service;
 
-@Primary
 @Service
 public abstract class MainService<T> {
 
-    
+    protected final MainRepository<T> repository;
 
-    
-    
+    // Constructor to accept a repository
+    public MainService(MainRepository<T> repository) {
+        this.repository = repository;
+    }
 }
