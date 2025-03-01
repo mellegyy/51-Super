@@ -9,31 +9,23 @@ import java.util.UUID;
 
 @Repository
 public class CartRepository extends MainRepository<Cart> {
-
-    // Define JSON file path
     @Override
     protected String getDataPath() {
-        return "src/main/java/com/example/data/carts.json"; // Make sure the file path is correct
+        return "src/main/java/com/example/data/carts.json";
     }
-
-    // Define the expected array type for deserialization
     @Override
     protected Class<Cart[]> getArrayType() {
         return Cart[].class;
     }
-
-    // 1️⃣ Add New Cart
     public Cart addCart(Cart cart) {
-        save(cart); // Use the save() method from MainRepository
+        save(cart); // Using the save() method from MainRepository
         return cart;
     }
 
-    // 2️⃣ Get All Carts
     public ArrayList<Cart> getCarts() {
-        return findAll(); // Use the findAll() method from MainRepository
+        return findAll(); // Using the findAll() method from MainRepository
     }
 
-    // 3️⃣ Get a Specific Cart by ID
     public Cart getCartById(UUID cartId) {
         return findAll().stream()
                 .filter(cart -> cart.getId().equals(cartId))
@@ -41,7 +33,6 @@ public class CartRepository extends MainRepository<Cart> {
                 .orElse(null);
     }
 
-    // 4️⃣ Get a User's Cart by User ID
     public Cart getCartByUserId(UUID userId) {
         return findAll().stream()
                 .filter(cart -> cart.getUserId().equals(userId))
@@ -49,7 +40,6 @@ public class CartRepository extends MainRepository<Cart> {
                 .orElse(null);
     }
 
-    // 5️⃣ Add Product to Cart
     public void addProductToCart(UUID cartId, Product product) {
         ArrayList<Cart> carts = findAll();
         for (Cart cart : carts) {
@@ -61,7 +51,6 @@ public class CartRepository extends MainRepository<Cart> {
         }
     }
 
-    // 6️⃣ Delete Product from Cart
     public void deleteProductFromCart(UUID cartId, Product product) {
         ArrayList<Cart> carts = findAll();
         for (Cart cart : carts) {
@@ -73,7 +62,6 @@ public class CartRepository extends MainRepository<Cart> {
         }
     }
 
-    // 7️⃣ Delete Cart by ID
     public void deleteCartById(UUID cartId) {
         ArrayList<Cart> carts = findAll();
         carts.removeIf(cart -> cart.getId().equals(cartId));
