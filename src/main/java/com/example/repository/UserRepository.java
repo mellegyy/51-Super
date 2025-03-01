@@ -3,8 +3,6 @@ package com.example.repository;
 import com.example.model.Order;
 import com.example.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;  // ✅ Correct import
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Repository;
@@ -24,116 +22,101 @@ public class UserRepository extends MainRepository<User> {
 
     @Override
     protected String getDataPath() {
-        return "data/users.json";  // No absolute path, just the relative classpath location
+        return "src/main/java/com/example/data/users.json/";
     }
+
 
     @Override
     protected Class<User[]> getArrayType() {
         return User[].class;
     }
-
     public UserRepository() {
     }
 
     public ArrayList<User> getUsers() {
-        try (InputStream inputStream = new ClassPathResource(getDataPath()).getInputStream()) {
-            User[] usersArray = objectMapper.readValue(inputStream, getArrayType());
-            return new ArrayList<>(Arrays.asList(usersArray));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load users from file", e);
-        }
+        return findAll();
     }
 
     public User getUserById(UUID userId) {
-        for (User user : getUsers()) {
-            if (user.getId().equals(userId)) {
-                return user;
-            }
-        }
-        return null;
+        return findAll().stream()
+                .filter(user -> user.getId().equals(userId))
+                .findFirst()
+                .orElse(null);
     }
 
     public User addUser(User user) {
-        try {
-            ArrayList<User> users = getUsers();
+        ArrayList<User> users = findAll();
 
-            if (users.contains(user)) {
-                throw new RuntimeException("User Already Added");
-            }
+        boolean exists = users.stream()
+                .anyMatch(u -> u.getId().equals(user.getId())
+                        || u.getName().trim().equalsIgnoreCase(user.getName().trim()));
 
-            if (users.stream().anyMatch(u -> u.getName().trim().equalsIgnoreCase(user.getName().trim()))) {
-                throw new RuntimeException("Warning: Duplicate user");
-            }
-            else {
-                users.add(user);
-                writeUsersToFile(users);
-                return user;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save user", e);
+        if (exists) {
+            throw new RuntimeException("User already exists");
         }
-    }
 
-
-
-    private void writeUsersToFile(List<User> users) throws IOException {
-        File file = new FileSystemResource("src/main/resources/" + getDataPath()).getFile(); // Use a writable path
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, users);
-        System.out.println("File Saved");
+        users.add(user);
+        saveAll(users);
+        return user;
     }
 
     public List<Order> getOrdersByUserId(UUID userId) {
         User user = getUserById(userId);
-        if (user != null) {
-            return user.getOrders();
-        }
-        return null;
+        return user != null ? user.getOrders() : null;
     }
 
     public void addOrderToUser(UUID userId, Order order) {
-        ArrayList<User> users = getUsers();
+        ArrayList<User> users = findAll();
         User user = getUserById(userId);
         if (user != null) {
             user.getOrders().add(order);
-            try {
-                writeUsersToFile(users); //to Write the Updated Order for the User
-                System.out.println("Order Saved");
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to save order", e);
-            }
+            saveAll(users);
+            System.out.println("Order added successfully");
+        } else {
+            System.out.println("Order addition failed: User not found");
         }
         System.out.println("Order Canceled: User Not Found");
     }
-
-
     public void removeOrderFromUser(UUID userId, UUID orderId) {
-        ArrayList<User> users = getUsers();
-        User user = getUserById(userId);
-        List<Order> orders = getOrdersByUserId(userId);
-        for (Order order : orders) {
-            if (order.getId().equals(orderId)) {
-                user.getOrders().remove(order);
-                try {
-                    writeUsersToFile(users); //to Write the Updated User After Deletion
-                    System.out.println("Order Saved");
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to save order", e);
-                }
-                break;
-            }
+        ArrayList<User> users = findAll();
+
+        User user = users.stream()
+                .filter(u -> u.getId().equals(userId))
+                .findFirst()
+                .orElse(null);
+
+        if (user == null) {
+            return;
         }
-        System.out.println("Order Canceled: User Not Found");
+        List<Order> updatedOrders = new ArrayList<>(user.getOrders());
+        boolean removedFromUser = updatedOrders.removeIf(order -> {
+            return order.getId().equals(orderId) && order.getUserId().equals(userId);
+        });
+
+        if (removedFromUser) {
+            user.setOrders(updatedOrders);
+            saveAll(users);
+            deleteOrderById(orderId);
+
+        } else {
+            System.out.println("Order removal failed: Order not found in user's orders.");
+        }
+    }
+    public void deleteOrderById(UUID orderId) {
+        OrderRepository orderRepository = new OrderRepository();
+        orderRepository.deleteOrderById(orderId);
     }
 
     public void deleteUserById(UUID userId) {
-        try {
-            ArrayList<User> users = getUsers();
-            users.removeIf(user -> user.getId().equals(userId));
-            writeUsersToFile(users);
-            System.out.println("User Deleted");
-        } catch (IOException e) {
-            throw new RuntimeException("Error updating file after deletion", e);
+        ArrayList<User> users = findAll();
+
+        boolean removed = users.removeIf(user -> user.getId().equals(userId));
+
+        if (removed) {
+            saveAll(users);
+            System.out.println("User deleted successfully");
+        } else {
+            throw new RuntimeException("User with ID " + userId + " not found.");
         }
     }
-
 }

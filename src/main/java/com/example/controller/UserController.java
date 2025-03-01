@@ -23,22 +23,22 @@ public class UserController {
     @PostMapping("/")
     public User addUser(@RequestBody User user) {
        return userService.addUser(user);
-    }
+    }//done
 
     @GetMapping("/")
     public ArrayList<User> getUsers(){
         return userService.getUsers();
-    }
+    }//done
 
     @GetMapping("/{userId}")
     public User getUserById(@PathVariable UUID userId) {
         return userService.getUserById(userId);
-    }
+    }//done
 
     @GetMapping("/{userId}/orders")
     public List<Order> getOrdersByUserId(@PathVariable UUID userId) {
         return userService.getOrdersByUserId(userId);
-    }
+    }//done
 
     @PostMapping("/{userId}/checkout")
     public String addOrderToUser(@PathVariable UUID userId) {
@@ -52,13 +52,15 @@ public class UserController {
 
     @PostMapping("/{userId}/removeOrder")
     public String removeOrderFromUser(@PathVariable UUID userId, @RequestParam UUID orderId) {
+
         try {
             userService.removeOrderFromUser(userId, orderId);
             return "Order Removed Successfully";
         } catch (RuntimeException e) {
-            return e.getMessage();
+            return "Error: " + e.getMessage();
         }
-    }
+    }//done
+
 
     @DeleteMapping("/{userId}/emptyCart")
     public String emptyCart(@PathVariable UUID userId) {
@@ -83,7 +85,7 @@ public class UserController {
         } catch (RuntimeException e) {
             return e.getMessage();
         }
-    }
+    }//done
 }
 
 

@@ -15,6 +15,9 @@ public class User {
     public User() {
         this.id = UUID.randomUUID();
     }
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
+    }
 
     public UUID getId() {
         return id;
