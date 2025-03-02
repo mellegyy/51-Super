@@ -49,7 +49,7 @@ public class ProductController {
     @DeleteMapping("/delete/{productId}")
     public String deleteProductById(@PathVariable UUID productId){
         productService.deleteProductById(productId);
-        return "Product deleted";
+        return "Order deleted successfully";
     }
 
 

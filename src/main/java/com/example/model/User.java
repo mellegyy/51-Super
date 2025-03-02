@@ -14,9 +14,17 @@ public class User {
 
     public User() {
         this.id = UUID.randomUUID();
+        this.orders = new ArrayList<>();
     }
+
+    public User(UUID id, String name) {
+        this.id = id;
+        this.name = name;
+        this.orders = new ArrayList<>();
+    }
+
     public void setOrders(List<Order> orders) {
-        this.orders = orders;
+        this.orders = (orders != null) ? orders : new ArrayList<>();
     }
 
     public UUID getId() {
@@ -37,6 +45,9 @@ public class User {
 
 
     public List<Order> getOrders() {
-        return new ArrayList<>(orders); // Return a copy to ensure immutability
+        if (this.orders == null) {
+            this.orders = new ArrayList<>();
+        }
+        return orders;
     }
 }

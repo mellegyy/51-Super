@@ -18,28 +18,23 @@ public class OrderController {
     }
 
     @PostMapping("/")
-    public void addOrder(@RequestBody Order order){
+    public void addOrder(@RequestBody Order order) {
         orderService.addOrder(order);
     }
 
     @GetMapping("/{orderId}")
-    public Order getOrderById(@PathVariable UUID orderId){
+    public Order getOrderById(@PathVariable UUID orderId) {
         return orderService.getOrderById(orderId);
     }
 
     @GetMapping("/")
-    public ArrayList<Order> getOrders(){
+    public ArrayList<Order> getOrders() {
         return orderService.getOrders();
     }
 
     @DeleteMapping("/delete/{orderId}")
-    public String deleteOrderById(@PathVariable UUID orderId){
+    public String deleteOrderById(@PathVariable UUID orderId) {
         orderService.deleteOrderById(orderId);
-        return "Order deleted.";
+        return "Order deleted successfully";
     }
-
-
-
-//The Dependency Injection Variables
-//The Constructor with the requried variables mapping the Dependency Injection.
 }
