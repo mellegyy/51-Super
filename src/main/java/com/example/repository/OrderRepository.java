@@ -60,7 +60,7 @@ public class OrderRepository extends MainRepository<Order> {
         if (removed) {
             saveAll(orders); // Save the updated list only if a product was removed
         } else {
-            throw new RuntimeException("Product with ID " + orderId + " not found.");
+            throw new RuntimeException("Order not found.");
         }
     }
 

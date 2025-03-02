@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.model.Product;
+import com.example.service.OrderService;
 import com.example.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,11 @@ public class ProductController {
 
     @Autowired
     ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
 
     @PostMapping("/")
     public Product addProduct(@RequestBody Product product) {
