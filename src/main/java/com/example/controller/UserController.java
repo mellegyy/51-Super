@@ -64,17 +64,20 @@ public class UserController {
 
     @DeleteMapping("/{userId}/emptyCart")
     public String emptyCart(@PathVariable UUID userId) {
-        return null;
+        userService.emptyCart(userId);
+        return "Cart emptied successfully for user: " + userId;
     }
 
     @PutMapping("/addProductToCart")
     public String addProductToCart(@RequestParam UUID userId, @RequestParam UUID productId) {
-        return null;
+        userService.addProductToCart(userId, productId);
+        return "Product added successfully to cart for user: " + userId;
     }
 
     @PutMapping("/deleteProductFromCart")
     public String deleteProductFromCart(@RequestParam UUID userId, @RequestParam UUID productId) {
-        return null;
+        userService.deleteProductFromCart(userId, productId);
+        return "Product removed successfully from cart for user: " + userId;
     }
 
     @DeleteMapping("/delete/{userId}")

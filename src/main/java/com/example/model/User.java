@@ -8,7 +8,7 @@ import java.util.ArrayList;import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 public class User {
-    private final UUID id;
+    private  UUID id;
     private  String name;
     private  List<Order> orders;
 
@@ -26,6 +26,15 @@ public class User {
     public String getName() {
         return name;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
 
     public List<Order> getOrders() {
         return new ArrayList<>(orders); // Return a copy to ensure immutability

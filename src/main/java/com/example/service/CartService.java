@@ -37,11 +37,27 @@ public class CartService extends MainService<Cart> {
     }
 
     public void addProductToCart(UUID cartId, Product product) {
-        cartRepository.addProductToCart(cartId, product);
+        Cart cart = cartRepository.getCartById(cartId);
+        if (cart != null) {
+            cart.addProduct(product);
+            cartRepository.updateCart(cart);
+        }
     }
 
     public void deleteProductFromCart(UUID cartId, Product product) {
-        cartRepository.deleteProductFromCart(cartId, product);
+        Cart cart = cartRepository.getCartById(cartId);
+        if (cart != null) {
+            cart.removeProduct(product);
+            cartRepository.updateCart(cart);
+        }
+    }
+
+    public void emptyCart(UUID userId) {
+        Cart cart = cartRepository.getCartByUserId(userId);
+        if (cart != null) {
+            cart.getProducts().clear();
+            cartRepository.updateCart(cart);
+        }
     }
 
     public void deleteCartById(UUID cartId) {

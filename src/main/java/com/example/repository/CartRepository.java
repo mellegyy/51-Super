@@ -67,4 +67,15 @@ public class CartRepository extends MainRepository<Cart> {
         carts.removeIf(cart -> cart.getId().equals(cartId));
         saveAll(carts); // Update JSON file
     }
+
+    public void updateCart(Cart updatedCart) {
+        ArrayList<Cart> carts = findAll();
+        for (int i = 0; i < carts.size(); i++) {
+            if (carts.get(i).getId().equals(updatedCart.getId())) {
+                carts.set(i, updatedCart);
+                saveAll(carts);
+                return;
+            }
+        }
+    }
 }

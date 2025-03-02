@@ -13,6 +13,10 @@ public class Product {
         this.id = UUID.randomUUID();
     }
 
+    public Product(UUID id) {
+        this.id = id;
+    }
+
     public Product(UUID id, String name, double price) {
         this.id = id;
         this.name = name;
