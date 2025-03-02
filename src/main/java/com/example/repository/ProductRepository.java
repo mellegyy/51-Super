@@ -33,7 +33,7 @@ public class ProductRepository extends MainRepository<Product> {
             save(product);
             return product; // Product added successfully
         } else {
-            return null; // Product already exists, do nothing
+            throw new RuntimeException("Product with the same ID already exists.");
         }
     }
 

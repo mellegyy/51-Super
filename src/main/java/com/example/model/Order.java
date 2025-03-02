@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
 @Component
 public class Order {
     private UUID id;
@@ -15,12 +14,18 @@ public class Order {
 
     public Order() {
         this.id = UUID.randomUUID();
+        this.totalPrice = products.stream().mapToDouble(Product::getPrice).sum(); // Sum all product prices
     }
 
     public Order(UUID userId, double totalPrice, List<Product> products) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.totalPrice = totalPrice;
+        this.products = products;
+    }
+    public Order(UUID userId, List<Product> products) {
+        this.id = UUID.randomUUID();
+        this.userId = userId;
         this.products = products;
     }
 
