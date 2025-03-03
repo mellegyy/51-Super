@@ -55,7 +55,10 @@ public class Cart {
         this.products.add(product);
     }
 
-    public void removeProduct(Product product) {
-        this.products.remove(product);
+    public boolean removeProduct(Product product) {
+        boolean removed = products.removeIf(p -> p.getId().equals(product.getId())); // ✅ Compare by UUID
+        System.out.println("🛑 Removing product with ID: " + product.getId() + " → Success: " + removed);
+        return removed;
     }
+
 }

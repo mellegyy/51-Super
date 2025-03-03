@@ -23,8 +23,10 @@ public class UserService extends MainService<User>{
     private ProductRepository productRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, CartRepository cartRepository, ProductRepository productRepository) {
         this.userRepository = userRepository;
+        this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
     }
 
     public User addUser(User user) {
@@ -46,30 +48,60 @@ public class UserService extends MainService<User>{
     public void addOrderToUser(UUID userId) {} //Call Methods from CartService
 
 
-    public void addProductToCart(UUID userId, UUID productId) {
+    public String addProductToCart(UUID userId, UUID productId) {
         Cart userCart = cartRepository.getCartByUserId(userId);
         Product product = productRepository.getProductById(productId);
 
-        if (userCart != null && product != null) {
-            userCart.addProduct(product);
-            cartRepository.updateCart(userCart);
+        if (userCart == null) {
+            userCart = new Cart(userId);
+            cartRepository.save(userCart);
         }
+
+        if (product == null) {
+            return "Product not found";
+        }
+
+        userCart.addProduct(product);
+        cartRepository.updateCart(userCart);
+        return "Product added to cart";
     }
-    public void emptyCart(UUID userId) {
+    public String emptyCart(UUID userId) {
         Cart userCart = cartRepository.getCartByUserId(userId);
         if (userCart != null) {
             userCart.getProducts().clear();
             cartRepository.updateCart(userCart);
+            return "Cart emptied successfully";
         }
-    } //Call Methods from CartService
-
-    public void deleteProductFromCart(UUID userId, UUID productId) {
-        Cart userCart = cartRepository.getCartByUserId(userId);
-        if (userCart != null) {
-            userCart.removeProduct(new Product(productId));
-            cartRepository.updateCart(userCart);
-        }
+        return "Cart not found";
     }
+
+    public String deleteProductFromCart(UUID userId, UUID productId) {
+        System.out.println("Checking cart for userId: " + userId);
+        Cart userCart = cartRepository.getCartByUserId(userId);
+
+        if (userCart == null) {
+            System.out.println("No cart found for userId: " + userId);
+            return "Cart is empty";
+        }
+        System.out.println("Cart found: " + userCart);
+
+        System.out.println("Cart before removal: " + userCart.getProducts());
+        for (Product p : userCart.getProducts()) {
+            System.out.println("Product in cart: " + p.getId());
+        }
+        System.out.println("Requested removal productId: " + productId);
+
+        boolean removed = userCart.removeProduct(new Product(productId));
+
+        if (!removed) {
+            return "Product not found in cart"; // This means the product is not in the list
+        }
+
+        cartRepository.updateCart(userCart);
+        System.out.println("Cart after removal: " + userCart.getProducts());
+        return "Product deleted from cart";
+    }
+
 
     public void removeOrderFromUser(UUID userId, UUID orderId) {
         userRepository.removeOrderFromUser(userId, orderId);
