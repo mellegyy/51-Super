@@ -25,6 +25,13 @@ public class UserRepository extends MainRepository<User> {
         return "src/main/java/com/example/data/users.json/";
     }
 
+    public void saveAll(List<User> users) {
+        try {
+            objectMapper.writeValue(new File(getDataPath()), users);
+        } catch (IOException e) {
+            throw new RuntimeException("Error saving users data", e);
+        }
+    }
 
     @Override
     protected Class<User[]> getArrayType() {

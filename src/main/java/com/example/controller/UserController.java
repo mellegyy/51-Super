@@ -44,7 +44,7 @@ public class UserController {
     public String addOrderToUser(@PathVariable UUID userId) {
         try {
             userService.addOrderToUser(userId);
-            return "Order Added Successfully";
+            return "Order added successfully";
         } catch (RuntimeException e) {
             return e.getMessage();
         }
@@ -55,7 +55,7 @@ public class UserController {
 
         try {
             userService.removeOrderFromUser(userId, orderId);
-            return "Order Removed Successfully";
+            return "Order removed successfully";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
         }
@@ -84,9 +84,9 @@ public class UserController {
     public String deleteUserById(@PathVariable UUID userId) {
         try {
             userService.deleteUserById(userId);
-            return "User Removed Successfully";
+            return "User deleted successfully";
         } catch (RuntimeException e) {
-            return e.getMessage();
+            return "User not found";
         }
     }//done
 }
