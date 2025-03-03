@@ -1,6 +1,8 @@
 package com.example.service;
 
 import com.example.model.Product;
+
+import com.example.repository.OrderRepository;
 import com.example.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,8 +14,13 @@ import java.util.UUID;
 @SuppressWarnings("rawtypes")
 public class ProductService extends MainService<Product> {
 
-    @Autowired
+
     ProductRepository productRepository;
+    @Autowired
+
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     public Product addProduct(Product product){
         return productRepository.addProduct(product);
