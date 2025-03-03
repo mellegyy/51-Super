@@ -33,7 +33,7 @@ public class ProductRepository extends MainRepository<Product> {
             save(product);
             return product; // Product added successfully
         } else {
-            return null; // Product already exists, do nothing
+            throw new RuntimeException("Product with the same ID already exists.");
         }
     }
 
@@ -71,7 +71,7 @@ public class ProductRepository extends MainRepository<Product> {
 
         for (Product product : products) {
             if (productIds.contains(product.getId())) {
-                double newPrice = product.getPrice() * (discount / 100.0);
+                double newPrice = product.getPrice() * (1 - discount / 100.0);
                 product.setPrice(newPrice);
             }
         }
@@ -87,7 +87,7 @@ public class ProductRepository extends MainRepository<Product> {
         if (removed) {
             saveAll(products); // Save the updated list only if a product was removed
         } else {
-            throw new RuntimeException("Product with ID " + productId + " not found.");
+            throw new RuntimeException("Product not found");
         }
     }
 
