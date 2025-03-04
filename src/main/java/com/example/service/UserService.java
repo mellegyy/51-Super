@@ -38,14 +38,22 @@ public class UserService extends MainService<User>{
     }
 
     public User getUserById(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         return userRepository.getUserById(userId);
     }
 
+
     public List<Order> getOrdersByUserId(UUID userId) {
+        if(userId == null)
+            throw new IllegalArgumentException("User ID cannot be null");
         return userRepository.getOrdersByUserId(userId);
     }
 
-    public void addOrderToUser(UUID userId) {} //Call Methods from CartService
+    public void addOrderToUser(UUID userId) {
+       return ;
+    } //Call Methods from CartService
 
 
     public String addProductToCart(UUID userId, UUID productId) {

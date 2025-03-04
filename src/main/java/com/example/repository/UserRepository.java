@@ -52,8 +52,11 @@ public class UserRepository extends MainRepository<User> {
     }
 
     public User addUser(User user) {
-        ArrayList<User> users = findAll();
+        if (user == null) {
+            throw new NullPointerException("User cannot be null");
+        }
 
+        ArrayList<User> users = findAll();
         boolean exists = users.stream()
                 .anyMatch(u -> u.getId().equals(user.getId())
                         || u.getName().trim().equalsIgnoreCase(user.getName().trim()));
@@ -66,6 +69,7 @@ public class UserRepository extends MainRepository<User> {
         saveAll(users);
         return user;
     }
+
 
     public List<Order> getOrdersByUserId(UUID userId) {
         User user = getUserById(userId);
@@ -85,6 +89,9 @@ public class UserRepository extends MainRepository<User> {
         System.out.println("Order Canceled: User Not Found");
     }
     public void removeOrderFromUser(UUID userId, UUID orderId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         ArrayList<User> users = findAll();
 
         User user = users.stream()
@@ -93,7 +100,7 @@ public class UserRepository extends MainRepository<User> {
                 .orElse(null);
 
         if (user == null) {
-            return;
+            throw new RuntimeException("User not found");
         }
         List<Order> updatedOrders = new ArrayList<>(user.getOrders());
         boolean removedFromUser = updatedOrders.removeIf(order -> {
@@ -106,7 +113,7 @@ public class UserRepository extends MainRepository<User> {
             deleteOrderById(orderId);
 
         } else {
-            System.out.println("Order removal failed: Order not found in user's orders.");
+            throw new RuntimeException("Order not found");
         }
     }
     public void deleteOrderById(UUID orderId) {
@@ -115,6 +122,9 @@ public class UserRepository extends MainRepository<User> {
     }
 
     public void deleteUserById(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         ArrayList<User> users = findAll();
 
         boolean removed = users.removeIf(user -> user.getId().equals(userId));
@@ -123,7 +133,7 @@ public class UserRepository extends MainRepository<User> {
             saveAll(users);
             System.out.println("User deleted successfully");
         } else {
-            throw new RuntimeException("User with ID " + userId + " not found.");
+            throw new RuntimeException("User not found");
         }
     }
 }

@@ -42,6 +42,9 @@ public class UserController {
 
     @PostMapping("/{userId}/checkout")
     public String addOrderToUser(@PathVariable UUID userId) {
+        if (userId == null) {
+            return "Invalid user ID";
+        }
         try {
             userService.addOrderToUser(userId);
             return "Order added successfully";
