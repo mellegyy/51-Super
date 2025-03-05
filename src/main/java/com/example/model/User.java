@@ -10,11 +10,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class User {
     private UUID id;
     private String name;
-    private List<Order> orders;
+    private List<Order> orders = new ArrayList<>();
 
     public User() {
         this.id = UUID.randomUUID();
         this.orders = new ArrayList<>();
+    }
+
+    public User(UUID userId, String s) {
+        this.id = userId;
+        this.name = s;
     }
 
     public void setOrders(List<Order> orders) {

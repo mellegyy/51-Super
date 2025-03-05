@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 @Repository
+@SuppressWarnings("rawtypes")
 public class CartRepository extends MainRepository<Cart> {
     @Override
     protected String getDataPath() {
@@ -44,7 +45,7 @@ public class CartRepository extends MainRepository<Cart> {
         ArrayList<Cart> carts = findAll();
         for (Cart cart : carts) {
             if (cart.getId().equals(cartId)) {
-                cart.addProduct(product);
+                cart.getProducts().add(product);
                 saveAll(carts); // Update JSON file
                 return;
             }
@@ -55,7 +56,7 @@ public class CartRepository extends MainRepository<Cart> {
         ArrayList<Cart> carts = findAll();
         for (Cart cart : carts) {
             if (cart.getId().equals(cartId)) {
-                cart.removeProduct(product);
+                cart.getProducts().removeIf(p -> p.getId().equals(product.getId()));
                 saveAll(carts); // Update JSON file
                 return;
             }
@@ -68,14 +69,14 @@ public class CartRepository extends MainRepository<Cart> {
         saveAll(carts); // Update JSON file
     }
 
-    public void updateCart(Cart updatedCart) {
-        ArrayList<Cart> carts = findAll();
-        for (int i = 0; i < carts.size(); i++) {
-            if (carts.get(i).getId().equals(updatedCart.getId())) {
-                carts.set(i, updatedCart);
-                saveAll(carts);
-                return;
-            }
-        }
-    }
+//    public void updateCart(Cart updatedCart) {
+//        ArrayList<Cart> carts = findAll();
+//        for (int i = 0; i < carts.size(); i++) {
+//            if (carts.get(i).getId().equals(updatedCart.getId())) {
+//                carts.set(i, updatedCart);
+//                saveAll(carts);
+//                return;
+//            }
+//        }
+//    }
 }

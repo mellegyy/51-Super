@@ -41,7 +41,7 @@ public class OrderServiceTests {
         productRepository = new ProductRepository();
         productService = new ProductService(productRepository);
         userRepository = new UserRepository();
-        userService = new UserService(userRepository, cartRepository, productRepository);
+        userService = new UserService(userRepository, cartRepository, productRepository, orderRepository);
     }
 
     @AfterEach

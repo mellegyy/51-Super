@@ -2,6 +2,7 @@ package com.example.repository;
 import com.example.model.Order;
 import com.example.model.Product;
 import com.example.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -20,36 +21,39 @@ public class OrderRepository extends MainRepository<Order> {
     @Override
     protected Class<Order[]> getArrayType() { return Order[].class; }
 
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
 
     public OrderRepository() {
 
     }
 
-    public void addOrder(Order order){
-        boolean exists = findAll().stream().anyMatch(o -> o.getId().equals(order.getId()));
-        ProductRepository productRepository = new ProductRepository();
-        UserRepository userRepository = new UserRepository();
-        List<Product> allProducts = productRepository.getProducts();
-        List<User> allUsers = userRepository.getUsers();
-
-        boolean productExists = order.getProducts().stream()
-                .allMatch(orderProduct -> allProducts.stream()
-                        .anyMatch(dbProduct -> dbProduct.getId().equals(orderProduct.getId())));
-        boolean userExists = allUsers.stream()
-                .anyMatch(dbUser -> dbUser.getId().equals(order.getUserId()));
-
-        if (!userExists) {
-            throw new IllegalArgumentException("User not found.");
+    public void addOrder(Order order) {
+        // Ensure user exists
+        User user = userRepository.getUserById(order.getUserId());
+        if (user == null) {
+            userRepository.addUser(new User(order.getUserId(), "Auto-Created User"));
         }
+
+        // Ensure all products exist
+        boolean productExists = order.getProducts().stream()
+                .allMatch(product -> productRepository.getProductById(product.getId()) != null);
+
         if (!productExists) {
             throw new RuntimeException("One or more products in the order do not exist.");
         }
-        if (!exists) {
-            order.setTotalPrice(order.getProducts().stream().mapToDouble(Product::getPrice).sum());
-            save(order);
-        } else {
+
+        boolean orderExists = findAll().stream().anyMatch(o -> o.getId().equals(order.getId()));
+        if (orderExists) {
             throw new RuntimeException("Order with the same ID already exists.");
         }
+
+        order.setTotalPrice(order.getProducts().stream().mapToDouble(Product::getPrice).sum());
+        save(order);
     }
 
     public ArrayList<Order> getOrders(){
@@ -78,8 +82,5 @@ public class OrderRepository extends MainRepository<Order> {
             throw new RuntimeException("Order not found");
         }
     }
-
-
-
 
 }

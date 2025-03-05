@@ -5,6 +5,7 @@ import com.example.model.Order;
 import com.example.model.Product;
 import com.example.model.User;
 import com.example.repository.CartRepository;
+import com.example.repository.OrderRepository;
 import com.example.repository.ProductRepository;
 import com.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,15 @@ public class UserService extends MainService<User>{
     private UserRepository userRepository;
     private CartRepository cartRepository;
     private ProductRepository productRepository;
+    private OrderRepository orderRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, CartRepository cartRepository, ProductRepository productRepository) {
+    public UserService(UserRepository userRepository, CartRepository cartRepository,
+                       ProductRepository productRepository,OrderRepository  orderRepository) {
         this.userRepository = userRepository;
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
     }
 
     public User addUser(User user) {
@@ -51,69 +55,109 @@ public class UserService extends MainService<User>{
         return userRepository.getOrdersByUserId(userId);
     }
 
+
     public void addOrderToUser(UUID userId) {
-       return ;
-    } //Call Methods from CartService
+        System.out.println("🔍 Debug: Checking if user exists before adding order.");
+        User user = userRepository.getUserById(userId);
+        if (user == null) {
+            System.out.println("🛑 Debug: User with ID " + userId + " does not exist!");
+            return;
+        } else {
+            System.out.println("✅ Debug: User found - " + user.getName() + " | HashCode: " + user.hashCode());
+        }
 
 
-    public String addProductToCart(UUID userId, UUID productId) {
         Cart userCart = cartRepository.getCartByUserId(userId);
-        Product product = productRepository.getProductById(productId);
-
-        if (userCart == null) {
-            userCart = new Cart(userId);
-            cartRepository.save(userCart);
+        if (userCart == null || userCart.getProducts().isEmpty()) {
+            throw new IllegalStateException("Cart is empty, cannot create an order.");
         }
 
-        if (product == null) {
-            return "Product not found";
+        List<Product> validatedProducts = new ArrayList<>();
+        for (Product product : userCart.getProducts()) {
+            Product foundProduct = productRepository.getProductById(product.getId());
+            if (foundProduct == null) {
+                productRepository.addProduct(product);
+                foundProduct = product;
+            }
+            validatedProducts.add(foundProduct);
         }
 
-        userCart.addProduct(product);
-        cartRepository.updateCart(userCart);
-        return "Product added to cart";
+        System.out.println("📦 Debug: User's orders BEFORE adding: " + user.getOrders().size());
+
+        System.out.println("🛠 Debug: Creating new order...");
+        double totalPrice = validatedProducts.stream().mapToDouble(Product::getPrice).sum();
+        Order newOrder = new Order(UUID.randomUUID(), userId, totalPrice, validatedProducts);
+
+        System.out.println("✅ Debug: Adding order " + newOrder.getId() + " to user " + userId);
+
+        // Step 1: Save order to order repository
+        orderRepository.addOrder(newOrder);
+
+        List<Order> allOrders = orderRepository.getOrders();
+        System.out.println("📦 Debug: Orders in system after adding:");
+        for (Order o : allOrders) {
+            System.out.println("🛒 Order ID: " + o.getId() + " | User ID: " + o.getUserId());
+        }
+
+
+        // Step 3: Ensure user's orders list is initialized
+        if (user.getOrders() == null) {
+            user.setOrders(new ArrayList<>());  // Prevents null issues
+        }
+
+        // Step 4: Add new order to user's list
+        user.getOrders().add(newOrder);
+
+
+        ArrayList<User> users = userRepository.getUsers();
+        // Replace the old user object with the modified one
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i).getId().equals(userId)) {
+                users.set(i, user); // Overwrite with updated user
+                break;
+            }
+        }
+
+        // Save the updated list back to the repository
+        userRepository.overrideData(users);
+
+        // Debugging: Check if the update persisted
+        ArrayList<User> updatedUsers = userRepository.getUsers();
+        for (User u : updatedUsers) {
+            System.out.println("📦 Debug: User AFTER Saving | " + u.getName() + " | Orders: " + u.getOrders().size());
+        }
+
+
+        // Final verification
+        User updatedUserCheck = userRepository.getUserById(userId);
+        System.out.println("📦 Debug: Retrieved User AFTER Saving | Orders Count: " + updatedUserCheck.getOrders().size());
+
+        // Step 6: Clear cart after successful order placement
+        userCart.setProducts(new ArrayList<>());
+        cartRepository.deleteCartById(userCart.getId());
+        cartRepository.addCart(userCart);
+
+        System.out.println("✅ Debug: Order successfully added. User now has " + user.getOrders().size() + " orders.");
     }
-    public String emptyCart(UUID userId) {
+
+
+
+
+
+    public void emptyCart(UUID userId) {
         Cart userCart = cartRepository.getCartByUserId(userId);
+
         if (userCart != null) {
-            userCart.getProducts().clear();
-            cartRepository.updateCart(userCart);
-            return "Cart emptied successfully";
+            userCart.setProducts(new ArrayList<>());
+            cartRepository.deleteCartById(userCart.getId());
+            cartRepository.addCart(userCart);
         }
-        return "Cart not found";
     }
 
-    public String deleteProductFromCart(UUID userId, UUID productId) {
-        System.out.println("Checking cart for userId: " + userId);
-        Cart userCart = cartRepository.getCartByUserId(userId);
-
-        if (userCart == null) {
-            System.out.println("No cart found for userId: " + userId);
-            return "Cart is empty";
-        }
-        System.out.println("Cart found: " + userCart);
-
-        System.out.println("Cart before removal: " + userCart.getProducts());
-        for (Product p : userCart.getProducts()) {
-            System.out.println("Product in cart: " + p.getId());
-        }
-        System.out.println("Requested removal productId: " + productId);
-
-        boolean removed = userCart.removeProduct(new Product(productId));
-
-        if (!removed) {
-            return "Product not found in cart"; // This means the product is not in the list
-        }
-
-        cartRepository.updateCart(userCart);
-        System.out.println("Cart after removal: " + userCart.getProducts());
-        return "Product deleted from cart";
-    }
-
-
-    public void removeOrderFromUser(UUID userId, UUID orderId) {
+    public void removeOrderFromUser(UUID userId, UUID orderId){
         userRepository.removeOrderFromUser(userId, orderId);
     }
+
 
     public void deleteUserById(UUID userId) {
            userRepository.deleteUserById(userId);
