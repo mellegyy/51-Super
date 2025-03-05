@@ -48,25 +48,25 @@ public class OrderServiceTests {
     @AfterEach
     void cleanUp() {
         try (FileWriter writer = new FileWriter(ORDER_JSON_PATH)) {
-            writer.write("[]");  // Reset file content to an empty JSON array
+            writer.write("[]");
         } catch (IOException e) {
             e.printStackTrace();
             fail("Failed to reset JSON file after test execution.");
         }
         try (FileWriter writer = new FileWriter(PRODUCT_JSON_PATH)) {
-            writer.write("[]");  // Reset file content to an empty JSON array
+            writer.write("[]");
         } catch (IOException e) {
             e.printStackTrace();
             fail("Failed to reset JSON file after test execution.");
         }
         try (FileWriter writer = new FileWriter(USER_JSON_PATH)) {
-            writer.write("[]");  // Reset file content to an empty JSON array
+            writer.write("[]");
         } catch (IOException e) {
             e.printStackTrace();
             fail("Failed to reset JSON file after test execution.");
         }
         try (FileWriter writer = new FileWriter(CART_JSON_PATH)) {
-            writer.write("[]");  // Reset file content to an empty JSON array
+            writer.write("[]");
         } catch (IOException e) {
             e.printStackTrace();
             fail("Failed to reset JSON file after test execution.");
@@ -82,11 +82,8 @@ public class OrderServiceTests {
         Product product = new Product(UUID.randomUUID(), "Phone", 800.00);
         productService.addProduct(product);
         products.add(product);
-
-
         Order order = new Order(UUID.randomUUID(), userId, 800.00, products);
         orderService.addOrder(order);
-
         Order fetchedOrder = orderService.getOrderById(order.getId());
         assertNotNull(fetchedOrder);
         assertEquals(800.00, fetchedOrder.getTotalPrice());
@@ -101,8 +98,6 @@ public class OrderServiceTests {
         List<Product> products = new ArrayList<>();
         Order order1 = new Order(id, userId, 800.00, products);
         Order order2 = new Order(id, userId, 800.00, products);
-
-
         orderService.addOrder(order1);
         Exception exception = assertThrows(RuntimeException.class, () -> orderService.addOrder(order2));
         assertEquals("Order with the same ID already exists.", exception.getMessage());

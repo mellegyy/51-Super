@@ -6,6 +6,8 @@ import java.util.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,7 +31,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ComponentScan(basePackages = "com.example.*")
 @WebMvcTest
@@ -244,6 +246,8 @@ public class UserServiceTests {
 
     private UUID userId;
     private User testUser;
+    private Cart userCart;
+    private UUID cartId;
 
     @BeforeEach
     void setUp() {
@@ -540,5 +544,6 @@ public class UserServiceTests {
         int finalOrderCount = orderRepository.getOrders().size();
         assertEquals(initialOrderCount, finalOrderCount, "Order count should not change for invalid user ID");
     }
+
 
 }

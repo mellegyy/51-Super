@@ -43,10 +43,8 @@ public class OrderRepository extends MainRepository<Order> {
         User user = userRepository.getUserById(order.getUserId());
         if (user == null) {
             userRepository.addUser(new User(order.getUserId(), "Auto-Created User"));
-            //throw new IllegalArgumentException("User not found");
         }
 
-        // Ensure all products exist
         boolean productExists = order.getProducts().stream()
                 .allMatch(product -> productRepository.getProductById(product.getId()) != null);
 
@@ -84,7 +82,7 @@ public class OrderRepository extends MainRepository<Order> {
         boolean removed = orders.removeIf(order -> order.getId().equals(orderId));
 
         if (removed) {
-            saveAll(orders); // Save the updated list only if a product was removed
+            saveAll(orders);
         } else {
             throw new RuntimeException("Order not found");
         }

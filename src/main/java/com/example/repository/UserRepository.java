@@ -58,7 +58,7 @@ public class UserRepository extends MainRepository<User> {
         }
 
         if (user.getOrders() == null) {
-            user.setOrders(new ArrayList<>());  // Prevent null issues
+            user.setOrders(new ArrayList<>());
         }
 
         ArrayList<User> users = findAll();
@@ -72,8 +72,6 @@ public class UserRepository extends MainRepository<User> {
         if (user.getOrders() == null) {
             user.setOrders(new ArrayList<>());
         }
-
-        System.out.println("✅ Debug: User saved successfully with " + user.getOrders().size() + " orders.");
         users.add(user);
         saveAll(users);
         return user;

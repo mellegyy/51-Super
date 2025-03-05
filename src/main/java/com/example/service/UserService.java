@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+
 
 @Service
 @SuppressWarnings("rawtypes")
@@ -64,13 +66,11 @@ public class UserService extends MainService<User>{
         if (user == null) {
             throw new IllegalStateException("invalid user ID");
         }
-        else {
-            System.out.println("✅ Debug: User found - " + user.getName() + " | HashCode: " + user.hashCode());
-        }
         Cart userCart = cartRepository.getCartByUserId(userId);
         if (userCart == null || userCart.getProducts().isEmpty()) {
             throw new IllegalStateException("Cart is empty, cannot create an order.");
         }
+
         List<Product> validatedProducts = new ArrayList<>();
         for (Product product : userCart.getProducts()) {
             Product foundProduct = productRepository.getProductById(product.getId());
@@ -80,57 +80,32 @@ public class UserService extends MainService<User>{
             }
             validatedProducts.add(foundProduct);
         }
-        System.out.println("📦 Debug: User's orders BEFORE adding: " + user.getOrders().size());
-        System.out.println("🛠 Debug: Creating new order...");
         double totalPrice = validatedProducts.stream().mapToDouble(Product::getPrice).sum();
         Order newOrder = new Order(UUID.randomUUID(), userId, totalPrice, validatedProducts);
-        System.out.println("✅ Debug: Adding order " + newOrder.getId() + " to user " + userId);
-        // Step 1: Save order to order repository
         orderRepository.addOrder(newOrder);
         List<Order> allOrders = orderRepository.getOrders();
         System.out.println("📦 Debug: Orders in system after adding:");
         for (Order o : allOrders) {
             System.out.println("🛒 Order ID: " + o.getId() + " | User ID: " + o.getUserId());
         }
-
-
-        // Step 3: Ensure user's orders list is initialized
         if (user.getOrders() == null) {
-            user.setOrders(new ArrayList<>());  // Prevents null issues
+            user.setOrders(new ArrayList<>());
         }
-
-        // Step 4: Add new order to user's list
         userRepository.addOrderToUser(userId, newOrder);
-
-
-        // Debugging: Check if the update persisted
-        ArrayList<User> updatedUsers = userRepository.getUsers();
-        for (User u : updatedUsers) {
-            System.out.println("📦 Debug: User AFTER Saving | " + u.getName() + " | Orders: " + u.getOrders().size());
-        }
-
-        // Final verification
         User updatedUserCheck = userRepository.getUserById(userId);
-        System.out.println("📦 Debug: Retrieved User AFTER Saving | Orders Count: " + updatedUserCheck.getOrders().size());
-
-        // Step 6: Clear cart after successful order placement
         userCart.setProducts(new ArrayList<>());
         cartRepository.deleteCartById(userCart.getId());
         cartRepository.addCart(userCart);
-
-        System.out.println("✅ Debug: Order successfully added. User now has " + user.getOrders().size() + " orders.");
     }
 
-
-
-
-
     public void emptyCart(UUID userId) {
+        if (userId == null) {
+            throw new NullPointerException("User ID cannot be null");
+        }
         Cart userCart = cartRepository.getCartByUserId(userId);
-
         if (userCart != null) {
-            userCart.setProducts(new ArrayList<>());
             cartRepository.deleteCartById(userCart.getId());
+            userCart.getProducts().clear();
             cartRepository.addCart(userCart);
         }
     }

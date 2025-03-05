@@ -4,6 +4,7 @@ import com.example.model.Cart;
 import com.example.model.Product;
 import com.example.repository.CartRepository;
 import com.example.service.CartService;
+import com.example.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,12 +26,17 @@ class CartServiceTest {
     private CartRepository cartRepository;
 
     @InjectMocks
+    private UserService userService;
+
+
+    @InjectMocks
     private CartService cartService;
 
     private UUID cartId;
     private UUID userId;
     private Cart cart;
     private Product product;
+
 
     @BeforeEach
     void setUp() {
@@ -65,18 +71,12 @@ class CartServiceTest {
 
     @Test
     void getCarts_ShouldReturnListOfCarts() {
-        // Arrange
-        Cart cart = new Cart(); // Assuming you have a default constructor or a proper way to initialize it
-        List<Cart> carts = new ArrayList<>(List.of(cart)); // Ensure it's an ArrayList
-
+        Cart cart = new Cart();
+        List<Cart> carts = new ArrayList<>(List.of(cart));
         when(cartRepository.getCarts()).thenReturn((ArrayList<Cart>) carts);
-
-        // Act
         List<Cart> result = cartService.getCarts();
-
-        // Assert
         assertEquals(1, result.size());
-        assertEquals(cart, result.get(0)); // Ensuring the correct cart is returned
+        assertEquals(cart, result.get(0));
     }
 
     @Test
@@ -197,4 +197,32 @@ class CartServiceTest {
         cartService.deleteCartById(cartId);
         verify(cartRepository, times(1)).deleteCartById(cartId);
     }
+
+    // --- Tests for emptyCart (which is inside UserService) ---
+
+    @Test
+    void emptyCart_UserHasProducts_CartShouldBeEmpty() {
+        Cart userCart = new Cart(cartId, userId, new ArrayList<>());
+        userCart.getProducts().add(new Product(UUID.randomUUID(), "Test Product", 10.0));
+        when(cartRepository.getCartByUserId(userId)).thenReturn(userCart);
+        userService.emptyCart(userId);
+        System.out.println("Cart size after emptyCart: " + userCart.getProducts().size());
+        assertTrue(userCart.getProducts().isEmpty(), "Cart should be empty after calling emptyCart()");
+        verify(cartRepository, times(1)).getCartByUserId(userId);
+    }
+
+    @Test
+    void emptyCart_UserHasNoCart_ShouldDoNothing() {
+        lenient().when(cartRepository.getCartByUserId(userId)).thenReturn(null); // Use lenient()
+        userService.emptyCart(userId);
+        verify(cartRepository, never()).deleteCartById(any());
+        verify(cartRepository, never()).addCart(any());
+    }
+
+    @Test
+    void emptyCart_NullUserId_ShouldThrowException() {
+        assertThrows(NullPointerException.class, () -> userService.emptyCart(null),
+                "Should throw NullPointerException when userId is null");
+    }
+
 }

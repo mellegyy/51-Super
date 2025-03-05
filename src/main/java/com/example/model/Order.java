@@ -16,7 +16,7 @@ public class Order {
 
     public Order() {
         this.id = UUID.randomUUID();
-        this.totalPrice = products.stream().mapToDouble(Product::getPrice).sum(); // Sum all product prices
+        this.totalPrice = products.stream().mapToDouble(Product::getPrice).sum();
     }
 
     public Order(UUID userId, double totalPrice, List<Product> products) {

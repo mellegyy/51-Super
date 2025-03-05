@@ -34,7 +34,7 @@ public class ProductRepository extends MainRepository<Product> {
 
         if (!exists) {
             save(product);
-            return product; // Product added successfully
+            return product;
         } else {
             throw new RuntimeException("Product with the same ID already exists.");
         }
@@ -64,13 +64,13 @@ public class ProductRepository extends MainRepository<Product> {
                 if (product.getName() == null || product.getName().trim().isEmpty() || product.getPrice() < 0) {
                     throw new IllegalArgumentException("Invalid product data");
                 }else {
-                    saveAll(products); // Save the updated list
-                    return product; // Return the updated product
+                    saveAll(products);
+                    return product;
                 }
             }
         }
 
-        throw new RuntimeException("Product not found"); // Throw exception if product does not exist
+        throw new RuntimeException("Product not found");
     }
 
     public void applyDiscount(double discount, ArrayList<UUID> productIds) {
@@ -93,7 +93,7 @@ public class ProductRepository extends MainRepository<Product> {
             }
         }
 
-        saveAll(products); // Save the updated products
+        saveAll(products);
     }
 
     public void deleteProductById(UUID productId) {
@@ -106,7 +106,7 @@ public class ProductRepository extends MainRepository<Product> {
         boolean removed = products.removeIf(product -> product.getId().equals(productId));
 
         if (removed) {
-            saveAll(products); // Save the updated list only if a product was removed
+            saveAll(products);
         } else {
             throw new RuntimeException("Product not found");
         }
