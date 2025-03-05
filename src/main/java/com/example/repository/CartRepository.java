@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 @Repository
+@SuppressWarnings("rawtypes")
 public class CartRepository extends MainRepository<Cart> {
     @Override
     protected String getDataPath() {
@@ -18,12 +19,12 @@ public class CartRepository extends MainRepository<Cart> {
         return Cart[].class;
     }
     public Cart addCart(Cart cart) {
-        save(cart); // Using the save() method from MainRepository
+        save(cart);
         return cart;
     }
 
     public ArrayList<Cart> getCarts() {
-        return findAll(); // Using the findAll() method from MainRepository
+        return findAll();
     }
 
     public Cart getCartById(UUID cartId) {
@@ -44,8 +45,8 @@ public class CartRepository extends MainRepository<Cart> {
         ArrayList<Cart> carts = findAll();
         for (Cart cart : carts) {
             if (cart.getId().equals(cartId)) {
-                cart.addProduct(product);
-                saveAll(carts); // Update JSON file
+                cart.getProducts().add(product);
+                saveAll(carts);
                 return;
             }
         }
@@ -55,8 +56,8 @@ public class CartRepository extends MainRepository<Cart> {
         ArrayList<Cart> carts = findAll();
         for (Cart cart : carts) {
             if (cart.getId().equals(cartId)) {
-                cart.removeProduct(product);
-                saveAll(carts); // Update JSON file
+                cart.getProducts().removeIf(p -> p.getId().equals(product.getId()));
+                saveAll(carts);
                 return;
             }
         }
@@ -65,17 +66,8 @@ public class CartRepository extends MainRepository<Cart> {
     public void deleteCartById(UUID cartId) {
         ArrayList<Cart> carts = findAll();
         carts.removeIf(cart -> cart.getId().equals(cartId));
-        saveAll(carts); // Update JSON file
+        saveAll(carts);
     }
 
-    public void updateCart(Cart updatedCart) {
-        ArrayList<Cart> carts = findAll();
-        for (int i = 0; i < carts.size(); i++) {
-            if (carts.get(i).getId().equals(updatedCart.getId())) {
-                carts.set(i, updatedCart);
-                saveAll(carts);
-                return;
-            }
-        }
-    }
+
 }

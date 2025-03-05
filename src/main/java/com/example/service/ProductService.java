@@ -47,15 +47,5 @@ public class ProductService extends MainService<Product> {
     }
 
 
-
-
-
-
-
-
-
-
-//The Dependency Injection Variables
-//The Constructor with the requried variables mapping the Dependency Injection.
 }
 

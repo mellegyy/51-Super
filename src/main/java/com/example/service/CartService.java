@@ -21,8 +21,12 @@ public class CartService extends MainService<Cart> {
     }
 
     public Cart addCart(Cart cart) {
+        if (cart == null) {
+            throw new NullPointerException("Cart cannot be null");
+        }
         return cartRepository.addCart(cart);
     }
+
 
     public ArrayList<Cart> getCarts() {
         return cartRepository.getCarts();
@@ -37,30 +41,24 @@ public class CartService extends MainService<Cart> {
     }
 
     public void addProductToCart(UUID cartId, Product product) {
-        Cart cart = cartRepository.getCartById(cartId);
-        if (cart != null) {
-            cart.addProduct(product);
-            cartRepository.updateCart(cart);
+        if (cartId == null || product == null) {
+            throw new NullPointerException("Cart ID or Product cannot be null");
         }
+        cartRepository.addProductToCart(cartId, product);
     }
 
     public void deleteProductFromCart(UUID cartId, Product product) {
-        Cart cart = cartRepository.getCartById(cartId);
-        if (cart != null) {
-            cart.removeProduct(product);
-            cartRepository.updateCart(cart);
+        if (cartId == null || product == null) {
+            throw new NullPointerException("Cart ID or Product cannot be null");
         }
+        cartRepository.deleteProductFromCart(cartId, product);
     }
 
-    public void emptyCart(UUID userId) {
-        Cart cart = cartRepository.getCartByUserId(userId);
-        if (cart != null) {
-            cart.getProducts().clear();
-            cartRepository.updateCart(cart);
-        }
-    }
 
     public void deleteCartById(UUID cartId) {
+        if (cartId == null) {
+            throw new NullPointerException("Cart ID cannot be null");
+        }
         cartRepository.deleteCartById(cartId);
     }
 }

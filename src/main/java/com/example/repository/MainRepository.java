@@ -32,7 +32,7 @@ public abstract class MainRepository<T> {
             return new ArrayList<>(Arrays.asList(array));
             // return objectMapper.readValue(file, new TypeReference<ArrayList<T>>(){});
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read from JSON file", e);
+            throw new RuntimeException("Error retrieving users", e);
         }
     }
 

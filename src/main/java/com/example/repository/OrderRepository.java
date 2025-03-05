@@ -2,6 +2,7 @@ package com.example.repository;
 import com.example.model.Order;
 import com.example.model.Product;
 import com.example.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -20,36 +21,44 @@ public class OrderRepository extends MainRepository<Order> {
     @Override
     protected Class<Order[]> getArrayType() { return Order[].class; }
 
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
 
     public OrderRepository() {
 
     }
 
-    public void addOrder(Order order){
-        boolean exists = findAll().stream().anyMatch(o -> o.getId().equals(order.getId()));
-        ProductRepository productRepository = new ProductRepository();
-        UserRepository userRepository = new UserRepository();
-        List<Product> allProducts = productRepository.getProducts();
-        List<User> allUsers = userRepository.getUsers();
+    public void addOrder(Order order) {
+
+        if (order.getTotalPrice() < 0) {
+            throw new IllegalArgumentException("Invalid order data");
+        }
+        // Ensure user exists
+        userRepository = new UserRepository();
+        productRepository = new ProductRepository();
+        User user = userRepository.getUserById(order.getUserId());
+        if (user == null) {
+            userRepository.addUser(new User(order.getUserId(), "Auto-Created User"));
+        }
 
         boolean productExists = order.getProducts().stream()
-                .allMatch(orderProduct -> allProducts.stream()
-                        .anyMatch(dbProduct -> dbProduct.getId().equals(orderProduct.getId())));
-        boolean userExists = allUsers.stream()
-                .anyMatch(dbUser -> dbUser.getId().equals(order.getUserId()));
+                .allMatch(product -> productRepository.getProductById(product.getId()) != null);
 
-//        if (!userExists) {
-//            throw new RuntimeException("User not found.");
-//        }
         if (!productExists) {
             throw new RuntimeException("One or more products in the order do not exist.");
         }
-        if (!exists) {
-            order.setTotalPrice(order.getProducts().stream().mapToDouble(Product::getPrice).sum());
-            save(order);
-        } else {
-            throw new RuntimeException("Order with ID " + order.getId() + " already exists.");
+
+        boolean orderExists = findAll().stream().anyMatch(o -> o.getId().equals(order.getId()));
+        if (orderExists) {
+            throw new RuntimeException("Order with the same ID already exists.");
         }
+
+        order.setTotalPrice(order.getProducts().stream().mapToDouble(Product::getPrice).sum());
+        save(order);
     }
 
     public ArrayList<Order> getOrders(){
@@ -57,23 +66,26 @@ public class OrderRepository extends MainRepository<Order> {
     }
 
     public Order getOrderById(UUID orderId){
+        if (orderId == null) {
+            throw new IllegalArgumentException("Invalid order ID");
+        }
         return findAll().stream().filter(order -> order.getId().equals(orderId))
                 .findFirst().orElse(null);
     }
 
     public void deleteOrderById(UUID orderId) {
+        if (orderId == null) {
+            throw new IllegalArgumentException("Invalid order ID");
+        }
         ArrayList<Order> orders = findAll();
 
         boolean removed = orders.removeIf(order -> order.getId().equals(orderId));
 
         if (removed) {
-            saveAll(orders); // Save the updated list only if a product was removed
+            saveAll(orders);
         } else {
             throw new RuntimeException("Order not found");
         }
     }
-
-
-
 
 }

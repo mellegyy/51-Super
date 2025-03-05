@@ -15,7 +15,6 @@ public class CartController {
 
     private final CartService cartService;
 
-    // Dependency Injection of CartService
     @Autowired
     public CartController(CartService cartService) {
         this.cartService = cartService;

@@ -1,6 +1,5 @@
 package com.example.model;
 
-import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,15 +49,4 @@ public class Cart {
     public void setProducts(List<Product> products) {
         this.products = products;
     }
-
-    public void addProduct(Product product) {
-        this.products.add(product);
-    }
-
-    public boolean removeProduct(Product product) {
-        boolean removed = products.removeIf(p -> p.getId().equals(product.getId())); // ✅ Compare by UUID
-        System.out.println("🛑 Removing product with ID: " + product.getId() + " → Success: " + removed);
-        return removed;
-    }
-
 }

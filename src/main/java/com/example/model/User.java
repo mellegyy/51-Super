@@ -10,15 +10,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class User {
     private UUID id;
     private String name;
-    private List<Order> orders;
+    private List<Order> orders = new ArrayList<>();
 
     public User() {
         this.id = UUID.randomUUID();
         this.orders = new ArrayList<>();
     }
 
+    public User(UUID userId, String s) {
+        this.id = userId;
+        this.name = s;
+    }
+
     public void setOrders(List<Order> orders) {
-        this.orders = orders != null ? orders : new ArrayList<>(); // Avoid null assignment
+        this.orders = orders != null ? orders : new ArrayList<>();
     }
 
     @JsonProperty("id")
@@ -33,7 +38,7 @@ public class User {
 
     @JsonProperty("orders")
     public List<Order> getOrders() {
-        return new ArrayList<>(orders); // Ensure immutability
+        return orders;
     }
 
     public void setId(UUID uuid) {
