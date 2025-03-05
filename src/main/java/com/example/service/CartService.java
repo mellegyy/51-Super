@@ -41,15 +41,24 @@ public class CartService extends MainService<Cart> {
     }
 
     public void addProductToCart(UUID cartId, Product product) {
+        if (cartId == null || product == null) {
+            throw new NullPointerException("Cart ID or Product cannot be null");
+        }
         cartRepository.addProductToCart(cartId, product);
     }
 
     public void deleteProductFromCart(UUID cartId, Product product) {
+        if (cartId == null || product == null) {
+            throw new NullPointerException("Cart ID or Product cannot be null");
+        }
         cartRepository.deleteProductFromCart(cartId, product);
     }
 
 
     public void deleteCartById(UUID cartId) {
+        if (cartId == null) {
+            throw new NullPointerException("Cart ID cannot be null");
+        }
         cartRepository.deleteCartById(cartId);
     }
 }

@@ -12,11 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 
 @ExtendWith(MockitoExtension.class)
 class CartServiceTest {
@@ -27,29 +27,27 @@ class CartServiceTest {
     @InjectMocks
     private CartService cartService;
 
-    private UUID userId;
     private UUID cartId;
+    private UUID userId;
     private Cart cart;
     private Product product;
 
     @BeforeEach
     void setUp() {
-        userId = UUID.randomUUID();
         cartId = UUID.randomUUID();
-        product = new Product(UUID.randomUUID(), "Test Product", 100.0);
+        userId = UUID.randomUUID();
         cart = new Cart(cartId, userId, new ArrayList<>());
+        product = new Product(UUID.randomUUID(), "Test Product", 25.0);
     }
 
-    // Test addCart()
+    // --- Tests for addCart ---
+
     @Test
     void addCart_Success() {
         when(cartRepository.addCart(cart)).thenReturn(cart);
-
         Cart result = cartService.addCart(cart);
-
         assertNotNull(result);
         assertEquals(cart.getId(), result.getId());
-        verify(cartRepository, times(1)).addCart(cart);
     }
 
     @Test
@@ -57,78 +55,146 @@ class CartServiceTest {
         assertThrows(NullPointerException.class, () -> cartService.addCart(null));
     }
 
-    // Test getCarts()
     @Test
-    void getCarts_ReturnsListOfCarts() {
-        ArrayList<Cart> carts = new ArrayList<>();
-        carts.add(cart);
-        when(cartRepository.getCarts()).thenReturn(carts);
+    void addCart_ShouldCallRepositoryMethod() {
+        cartService.addCart(cart);
+        verify(cartRepository, times(1)).addCart(cart);
+    }
 
-        ArrayList<Cart> result = cartService.getCarts();
+    // --- Tests for getCarts ---
 
-        assertFalse(result.isEmpty());
+    @Test
+    void getCarts_ShouldReturnListOfCarts() {
+        // Arrange
+        Cart cart = new Cart(); // Assuming you have a default constructor or a proper way to initialize it
+        List<Cart> carts = new ArrayList<>(List.of(cart)); // Ensure it's an ArrayList
+
+        when(cartRepository.getCarts()).thenReturn((ArrayList<Cart>) carts);
+
+        // Act
+        List<Cart> result = cartService.getCarts();
+
+        // Assert
         assertEquals(1, result.size());
+        assertEquals(cart, result.get(0)); // Ensuring the correct cart is returned
+    }
+
+    @Test
+    void getCarts_EmptyList_ShouldReturnEmpty() {
+        when(cartRepository.getCarts()).thenReturn(new ArrayList<>());
+        List<Cart> result = cartService.getCarts();
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getCarts_ShouldCallRepositoryMethod() {
+        cartService.getCarts();
         verify(cartRepository, times(1)).getCarts();
     }
 
-    // Test getCartById()
+    // --- Tests for getCartById ---
+
     @Test
-    void getCartById_ExistingCart_ReturnsCart() {
+    void getCartById_Success() {
         when(cartRepository.getCartById(cartId)).thenReturn(cart);
-
         Cart result = cartService.getCartById(cartId);
-
         assertNotNull(result);
         assertEquals(cartId, result.getId());
     }
 
     @Test
-    void getCartById_NonExistentCart_ReturnsNull() {
+    void getCartById_NotFound_ShouldReturnNull() {
         when(cartRepository.getCartById(cartId)).thenReturn(null);
-
         Cart result = cartService.getCartById(cartId);
-
         assertNull(result);
     }
 
-    // Test getCartByUserId()
     @Test
-    void getCartByUserId_ExistingCart_ReturnsCart() {
+    void getCartById_ShouldCallRepositoryMethod() {
+        cartService.getCartById(cartId);
+        verify(cartRepository, times(1)).getCartById(cartId);
+    }
+
+    // --- Tests for getCartByUserId ---
+
+    @Test
+    void getCartByUserId_Success() {
         when(cartRepository.getCartByUserId(userId)).thenReturn(cart);
-
         Cart result = cartService.getCartByUserId(userId);
-
         assertNotNull(result);
         assertEquals(userId, result.getUserId());
     }
 
-    // Test addProductToCart()
     @Test
-    void addProductToCart_ValidCart_AddsProduct() {
+    void getCartByUserId_NotFound_ShouldReturnNull() {
+        when(cartRepository.getCartByUserId(userId)).thenReturn(null);
+        Cart result = cartService.getCartByUserId(userId);
+        assertNull(result);
+    }
+
+    @Test
+    void getCartByUserId_ShouldCallRepositoryMethod() {
+        cartService.getCartByUserId(userId);
+        verify(cartRepository, times(1)).getCartByUserId(userId);
+    }
+
+    // --- Tests for addProductToCart ---
+
+    @Test
+    void addProductToCart_Success() {
         doNothing().when(cartRepository).addProductToCart(cartId, product);
-
         cartService.addProductToCart(cartId, product);
-
         verify(cartRepository, times(1)).addProductToCart(cartId, product);
     }
 
-    // Test deleteProductFromCart()
     @Test
-    void deleteProductFromCart_ValidProduct_DeletesProduct() {
+    void addProductToCart_NullProduct_ShouldThrowException() {
+        assertThrows(NullPointerException.class, () -> cartService.addProductToCart(cartId, null));
+    }
+
+    @Test
+    void addProductToCart_ShouldCallRepositoryMethod() {
+        cartService.addProductToCart(cartId, product);
+        verify(cartRepository, times(1)).addProductToCart(cartId, product);
+    }
+
+    // --- Tests for deleteProductFromCart ---
+
+    @Test
+    void deleteProductFromCart_Success() {
         doNothing().when(cartRepository).deleteProductFromCart(cartId, product);
-
         cartService.deleteProductFromCart(cartId, product);
-
         verify(cartRepository, times(1)).deleteProductFromCart(cartId, product);
     }
 
-    // Test deleteCartById()
     @Test
-    void deleteCartById_ExistingCart_DeletesCart() {
+    void deleteProductFromCart_NullProduct_ShouldThrowException() {
+        assertThrows(NullPointerException.class, () -> cartService.deleteProductFromCart(cartId, null));
+    }
+
+    @Test
+    void deleteProductFromCart_ShouldCallRepositoryMethod() {
+        cartService.deleteProductFromCart(cartId, product);
+        verify(cartRepository, times(1)).deleteProductFromCart(cartId, product);
+    }
+
+    // --- Tests for deleteCartById ---
+
+    @Test
+    void deleteCartById_Success() {
         doNothing().when(cartRepository).deleteCartById(cartId);
-
         cartService.deleteCartById(cartId);
+        verify(cartRepository, times(1)).deleteCartById(cartId);
+    }
 
+    @Test
+    void deleteCartById_NullCartId_ShouldThrowException() {
+        assertThrows(NullPointerException.class, () -> cartService.deleteCartById(null));
+    }
+
+    @Test
+    void deleteCartById_ShouldCallRepositoryMethod() {
+        cartService.deleteCartById(cartId);
         verify(cartRepository, times(1)).deleteCartById(cartId);
     }
 }
