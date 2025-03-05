@@ -38,9 +38,9 @@ public class OrderRepository extends MainRepository<Order> {
         boolean userExists = allUsers.stream()
                 .anyMatch(dbUser -> dbUser.getId().equals(order.getUserId()));
 
-//        if (!userExists) {
-//            throw new RuntimeException("User not found.");
-//        }
+        if (!userExists) {
+            throw new IllegalArgumentException("User not found.");
+        }
         if (!productExists) {
             throw new RuntimeException("One or more products in the order do not exist.");
         }
@@ -48,7 +48,7 @@ public class OrderRepository extends MainRepository<Order> {
             order.setTotalPrice(order.getProducts().stream().mapToDouble(Product::getPrice).sum());
             save(order);
         } else {
-            throw new RuntimeException("Order with ID " + order.getId() + " already exists.");
+            throw new RuntimeException("Order with the same ID already exists.");
         }
     }
 
@@ -57,11 +57,17 @@ public class OrderRepository extends MainRepository<Order> {
     }
 
     public Order getOrderById(UUID orderId){
+        if (orderId == null) {
+            throw new IllegalArgumentException("Invalid order ID");
+        }
         return findAll().stream().filter(order -> order.getId().equals(orderId))
                 .findFirst().orElse(null);
     }
 
     public void deleteOrderById(UUID orderId) {
+        if (orderId == null) {
+            throw new IllegalArgumentException("Invalid order ID");
+        }
         ArrayList<Order> orders = findAll();
 
         boolean removed = orders.removeIf(order -> order.getId().equals(orderId));
