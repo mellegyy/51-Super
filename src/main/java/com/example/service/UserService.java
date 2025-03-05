@@ -57,21 +57,20 @@ public class UserService extends MainService<User>{
 
 
     public void addOrderToUser(UUID userId) {
-        System.out.println("🔍 Debug: Checking if user exists before adding order.");
         User user = userRepository.getUserById(userId);
+        if (userId == null) {
+            throw new IllegalStateException("User ID is Null");
+        }
         if (user == null) {
-            System.out.println("🛑 Debug: User with ID " + userId + " does not exist!");
-            return;
-        } else {
+            throw new IllegalStateException("invalid user ID");
+        }
+        else {
             System.out.println("✅ Debug: User found - " + user.getName() + " | HashCode: " + user.hashCode());
         }
-
-
         Cart userCart = cartRepository.getCartByUserId(userId);
         if (userCart == null || userCart.getProducts().isEmpty()) {
             throw new IllegalStateException("Cart is empty, cannot create an order.");
         }
-
         List<Product> validatedProducts = new ArrayList<>();
         for (Product product : userCart.getProducts()) {
             Product foundProduct = productRepository.getProductById(product.getId());
@@ -81,18 +80,13 @@ public class UserService extends MainService<User>{
             }
             validatedProducts.add(foundProduct);
         }
-
         System.out.println("📦 Debug: User's orders BEFORE adding: " + user.getOrders().size());
-
         System.out.println("🛠 Debug: Creating new order...");
         double totalPrice = validatedProducts.stream().mapToDouble(Product::getPrice).sum();
         Order newOrder = new Order(UUID.randomUUID(), userId, totalPrice, validatedProducts);
-
         System.out.println("✅ Debug: Adding order " + newOrder.getId() + " to user " + userId);
-
         // Step 1: Save order to order repository
         orderRepository.addOrder(newOrder);
-
         List<Order> allOrders = orderRepository.getOrders();
         System.out.println("📦 Debug: Orders in system after adding:");
         for (Order o : allOrders) {
@@ -106,27 +100,14 @@ public class UserService extends MainService<User>{
         }
 
         // Step 4: Add new order to user's list
-        user.getOrders().add(newOrder);
+        userRepository.addOrderToUser(userId, newOrder);
 
-
-        ArrayList<User> users = userRepository.getUsers();
-        // Replace the old user object with the modified one
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getId().equals(userId)) {
-                users.set(i, user); // Overwrite with updated user
-                break;
-            }
-        }
-
-        // Save the updated list back to the repository
-        userRepository.overrideData(users);
 
         // Debugging: Check if the update persisted
         ArrayList<User> updatedUsers = userRepository.getUsers();
         for (User u : updatedUsers) {
             System.out.println("📦 Debug: User AFTER Saving | " + u.getName() + " | Orders: " + u.getOrders().size());
         }
-
 
         // Final verification
         User updatedUserCheck = userRepository.getUserById(userId);

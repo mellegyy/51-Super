@@ -25,6 +25,8 @@ import com.example.service.OrderService;
 import com.example.service.ProductService;
 import com.example.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -336,10 +338,13 @@ public class UserServiceTests {
     @Test
     void testGetTheOrderOfAUser_InvalidId() {
         UUID invalidUserId = UUID.randomUUID();
-        List<Order> orders = userService.getOrdersByUserId(invalidUserId);
 
-        assertNull(orders, "Order list should not be null");
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.getOrdersByUserId(invalidUserId),
+                "User not found."); // We expect an exception when the user does not exist
+
     }
+
 
     @Test
     void testGetTheOrderOfAUser_NullId() {
@@ -435,19 +440,23 @@ public class UserServiceTests {
     // 2. Case: remove  order with invalid user id
     // 3. Case: remove order  with invalid order id
     // 4. Case: remove order with null user id
-   // @Test
-//    void testRemoveOrder_WithValidUserId() {
-//        User user = new User();
-//        user.setId(UUID.randomUUID());
-//        userService.addUser(user);
-//
-//        Order order = new Order(user.getId(), new ArrayList<>());
-//        userService.addOrder(order);
-//
-//        boolean removed = userService.removeOrderFromUser(user.getId(), order.getId());
-//
-//        assertTrue(removed, "Order should be removed successfully");
-//    }
+    @Test
+    void testRemoveOrderOfUserValidity() {
+        User testuser = new User();
+        testuser.setId(UUID.randomUUID());
+        testuser.setName("Sherif");
+        Product product = new Product(UUID.randomUUID(), "Test Product", 100.0);
+        Order order = new Order(UUID.randomUUID(), testuser.getId(), 100.0, List.of(product));
+        testuser.getOrders().add(order);
+        addUser(testuser);
+        addOrder(order);
+        userService.removeOrderFromUser(testuser.getId(), order.getId());
+        User updatedUser = userService.getUserById(testuser.getId());
+        assertFalse(
+                updatedUser.getOrders().contains(order),
+                "Order should have been removed from the user's orders"
+        );
+    }
 
     @Test
     void testRemoveOrder_WithInvalidUserId() {
@@ -482,6 +491,54 @@ public class UserServiceTests {
                 () -> userService.removeOrderFromUser(null, orderId));
 
         assertEquals("User ID cannot be null", thrownException.getMessage(), "Should throw exception when user ID is null");
+    }
+    // Test the addOrder method
+    // 1. Case: Adding Order with NullId
+    // 2. Case: Checking the OrderAdded and User in the Order.json File
+    // 3. Case: Adding Order with invalidId
+
+    // 1. Case: Adding Order with NullId
+    @Test
+    void testAddOrderToUserNull() {
+        userId = null;
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> userService.addOrderToUser(userId));
+
+        // Validate that the exception message is as expected
+        assertEquals("User ID is Null", exception.getMessage().trim());
+    }
+
+    // 2. Case: Checking the OrderAdded and User in the Order.json File
+    @Test
+    void testAddOrderToUser_validCase() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setId(userId);
+        user.setName("Test User");
+        userRepository.addUser(user);
+        UUID productId = UUID.randomUUID();
+        Product product = new Product(productId, "Test Product", 10.0);
+        Cart cart = new Cart();
+        cart.setId(UUID.randomUUID());
+        cart.setUserId(userId);
+        cart.setProducts(List.of(product));
+        cartRepository.addCart(cart);
+        userService.addOrderToUser(userId);
+        List<Order> orders = orderRepository.getOrders();
+        assertFalse(orders.isEmpty(), "Order should have been added.");
+        boolean orderFound = orders.stream().anyMatch(o -> o.getUserId().equals(userId));
+        assertTrue(orderFound, "The added order should belong to the correct user.");
+    }
+    // 3. Case: Adding Order with invalidId
+    @Test
+    void testAddOrderToUser_invalidUser() {
+        UUID invalidUserId = UUID.randomUUID();
+        int initialOrderCount = orderRepository.getOrders().size();
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> userService.addOrderToUser(invalidUserId));
+        assertEquals("invalid user ID", exception.getMessage());
+        int finalOrderCount = orderRepository.getOrders().size();
+        assertEquals(initialOrderCount, finalOrderCount, "Order count should not change for invalid user ID");
     }
 
 }

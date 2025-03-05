@@ -80,76 +80,58 @@ public class UserRepository extends MainRepository<User> {
     }
 
 
-//    public List<Order> getOrdersByUserId(UUID userId) {
-//        User user = getUserById(userId);
-//        return user != null ? user.getOrders() : new ArrayList<>();
-//    }
 
     public List<Order> getOrdersByUserId(UUID userId) {
         User user = getUserById(userId);
         if (user == null) {
             throw new IllegalArgumentException("User not found.");
         }
-
-        // Ensure orders list is initialized
         if (user.getOrders() == null) {
             user.setOrders(new ArrayList<>());  // Prevents null pointer exceptions
         }
-
         System.out.println("📦 Debug: Retrieved " + user.getOrders().size() + " orders for user " + userId);
 
         return user.getOrders();
     }
-
-
 
     public void addOrderToUser(UUID userId, Order order) {
         ArrayList<User> users = findAll();
         User user = getUserById(userId);
         if (user != null) {
             user.getOrders().add(order);
+            System.out.println("Order added successfully for user: " + user.getName());
+            for (int i = 0; i < users.size(); i++) {
+                if (users.get(i).getId().equals(userId)) {
+                    users.set(i, user);
+                    break;
+                }
+            }
             saveAll(users);
-            System.out.println("Order added successfully");
+            System.out.println("Users list updated successfully!");
         } else {
-            System.out.println("Order addition failed: User not found");
+            System.out.println("Order Canceled: User Not Found");
         }
-        System.out.println("Order Canceled: User Not Found");
     }
 
-//    public void removeOrderFromUser(UUID userId, UUID orderId) {
-//        if (userId == null) {
-//            throw new IllegalArgumentException("User ID cannot be null");
-//        }
-//        ArrayList<User> users = findAll();
-//
-//        User user = users.stream()
-//                .filter(u -> u.getId().equals(userId))
-//                .findFirst()
-//                .orElse(null);
-//
-//        if (user == null) {
-//            throw new RuntimeException("User not found");
-//        }
-//        List<Order> updatedOrders = new ArrayList<>(user.getOrders());
-//        boolean removedFromUser = updatedOrders.removeIf(order -> {
-//            return order.getId().equals(orderId) && order.getUserId().equals(userId);
-//        });
-//
-//        if (removedFromUser) {
-//            user.setOrders(updatedOrders);
-//            saveAll(users);
-//            deleteOrderById(orderId);
-//
-//        } else {
-//            throw new RuntimeException("Order not found");
-//        }
-//    }
-
-    public void removeOrderFromUser(UUID userId, UUID orderId){
+    public void removeOrderFromUser(UUID userId, UUID orderId) {
         User user = getUserById(userId);
-        List<Order> orders = user.getOrders().stream().filter(order -> !order.getId().equals(orderId)).collect(Collectors.toList());
+        if(userId == null){
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        List<Order> orders = user.getOrders().stream()
+                .filter(order -> !order.getId().equals(orderId))
+                .collect(Collectors.toList());
+
+        if (orders.size() == user.getOrders().size()) {
+            throw new IllegalArgumentException("Order not found");
+        }
         user.setOrders(orders);
+        deleteOrderById(orderId);
         save(user);
+        System.out.println("Order removed successfully!");
     }
 
     public void deleteOrderById(UUID orderId) {

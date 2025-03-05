@@ -1,4 +1,5 @@
 package com.example.model;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ public class Order {
     private UUID userId;
     private double totalPrice;
     private List<Product> products=new ArrayList<>();
+
 
     public Order() {
         this.id = UUID.randomUUID();
@@ -36,6 +38,7 @@ public class Order {
         this.products = products;
     }
 
+    @JsonProperty("id")
     public UUID getId() {
         return id;
     }
@@ -44,6 +47,7 @@ public class Order {
         this.id = id;
     }
 
+    @JsonProperty("userId")
     public UUID getUserId() {
         return userId;
     }
@@ -52,6 +56,7 @@ public class Order {
         this.userId = userId;
     }
 
+    @JsonProperty("totalPrice")
     public double getTotalPrice() {
         return totalPrice;
     }
@@ -60,6 +65,7 @@ public class Order {
         this.totalPrice = totalPrice;
     }
 
+    @JsonProperty("products")
     public List<Product> getProducts() {
         return products;
     }

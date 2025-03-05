@@ -23,7 +23,7 @@ public class User {
     }
 
     public void setOrders(List<Order> orders) {
-        this.orders = orders != null ? orders : new ArrayList<>(); // Avoid null assignment
+        this.orders = orders != null ? orders : new ArrayList<>();
     }
 
     @JsonProperty("id")
@@ -38,7 +38,7 @@ public class User {
 
     @JsonProperty("orders")
     public List<Order> getOrders() {
-        return new ArrayList<>(orders); // Ensure immutability
+        return orders;
     }
 
     public void setId(UUID uuid) {
