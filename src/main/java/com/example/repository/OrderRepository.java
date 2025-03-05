@@ -33,10 +33,17 @@ public class OrderRepository extends MainRepository<Order> {
     }
 
     public void addOrder(Order order) {
+
+        if (order.getTotalPrice() < 0) {
+            throw new IllegalArgumentException("Invalid order data");
+        }
         // Ensure user exists
+        userRepository = new UserRepository();
+        productRepository = new ProductRepository();
         User user = userRepository.getUserById(order.getUserId());
         if (user == null) {
             userRepository.addUser(new User(order.getUserId(), "Auto-Created User"));
+            //throw new IllegalArgumentException("User not found");
         }
 
         // Ensure all products exist

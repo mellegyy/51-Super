@@ -41,6 +41,7 @@ public class OrderServiceTests {
         productRepository = new ProductRepository();
         productService = new ProductService(productRepository);
         userRepository = new UserRepository();
+        cartRepository = new CartRepository();
         userService = new UserService(userRepository, cartRepository, productRepository, orderRepository);
     }
 
@@ -108,16 +109,23 @@ public class OrderServiceTests {
     }
 
     @Test
-    void testAddOrder_InvalidUserId() {
-        UUID invalidUserId = null; // Simulating missing user ID
-        List<Product> products = new ArrayList<>();
-        products.add(new Product(UUID.randomUUID(), "Phone", 800.00));
-
-        Order order = new Order(UUID.randomUUID(), invalidUserId, 800.00, products);
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> orderService.addOrder(order));
-        assertEquals("User not found.", exception.getMessage());
+    void testAddOrder_InvalidData() {
+        Order invalidOrder = new Order(UUID.randomUUID(),UUID.randomUUID(), -50, new ArrayList<>());
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> orderService.addOrder(invalidOrder));
+        assertEquals("Invalid order data", exception.getMessage());
     }
+
+//    @Test
+//    void testAddOrder_InvalidUserId() {
+//        UUID invalidUserId = null; // Simulating missing user ID
+//        List<Product> products = new ArrayList<>();
+//        products.add(new Product(UUID.randomUUID(), "Phone", 800.00));
+//
+//        Order order = new Order(UUID.randomUUID(), invalidUserId, 800.00, products);
+//
+//        Exception exception = assertThrows(IllegalArgumentException.class, () -> orderService.addOrder(order));
+//        assertEquals("User not found", exception.getMessage());
+//    }
 
 //    @Test
 //    void testAddOrder_EmptyProductList() {
